@@ -1,15 +1,33 @@
 VERSION 5.00
 Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.1#0"; "mscomctl.OCX"
 Begin VB.Form Form1 
-   Caption         =   "Form1"
+   Caption         =   "Hub de lectura"
    ClientHeight    =   8430
-   ClientLeft      =   60
-   ClientTop       =   405
+   ClientLeft      =   165
+   ClientTop       =   810
    ClientWidth     =   15690
    LinkTopic       =   "Form1"
+   MouseIcon       =   "Form1.frx":0000
    ScaleHeight     =   8430
    ScaleWidth      =   15690
    StartUpPosition =   3  'Windows Default
+   Begin VB.CommandButton btnEliminar 
+      Caption         =   "Eliminar"
+      BeginProperty Font 
+         Name            =   "MS Sans Serif"
+         Size            =   12
+         Charset         =   0
+         Weight          =   400
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   495
+      Left            =   9120
+      TabIndex        =   10
+      Top             =   6600
+      Width           =   1815
+   End
    Begin VB.CommandButton btnEditar 
       Caption         =   "Editar"
       BeginProperty Font 
@@ -155,6 +173,8 @@ Begin VB.Form Form1
          EndProperty
          Height          =   975
          Left            =   240
+         MouseIcon       =   "Form1.frx":10CA
+         Picture         =   "Form1.frx":2194
          Style           =   1  'Graphical
          TabIndex        =   2
          Top             =   1680
@@ -173,10 +193,37 @@ Begin VB.Form Form1
          EndProperty
          Height          =   975
          Left            =   240
+         Picture         =   "Form1.frx":325E
          Style           =   1  'Graphical
          TabIndex        =   1
          Top             =   480
          Width           =   2055
+      End
+   End
+   Begin VB.Menu btnArchivo 
+      Caption         =   "Archivo"
+      Begin VB.Menu btnNuevoLibro 
+         Caption         =   "Nuevo Libro"
+         Shortcut        =   ^N
+      End
+      Begin VB.Menu seperador 
+         Caption         =   "-&-"
+      End
+      Begin VB.Menu btnSalir 
+         Caption         =   "Salir"
+      End
+   End
+   Begin VB.Menu btnVer 
+      Caption         =   "Ver"
+      Begin VB.Menu btn_catalogo_mega 
+         Caption         =   "Catalogo MEGA"
+      End
+   End
+   Begin VB.Menu btnAyuda 
+      Caption         =   "Ayuda"
+      Begin VB.Menu btnAcecaDe 
+         Caption         =   "Acerca de..."
+         Shortcut        =   {F1}
       End
    End
 End
@@ -214,7 +261,7 @@ Private Sub CargarLibros(filtroSQL As String)
                 item.SubItems(4) = ""
             End If
             
-            item.Tag = rs!LibroID
+            item.Tag = rs!libroID
             
             rs.MoveNext
         Loop
@@ -222,6 +269,10 @@ Private Sub CargarLibros(filtroSQL As String)
     
     rs.Close: Set rs = Nothing
     
+End Sub
+
+Private Sub Archivo_Click()
+
 End Sub
 
 Private Sub btn_agregar_Click()
@@ -233,6 +284,10 @@ Private Sub btn_catalogo_Click()
     CargarLibros ""
 End Sub
 
+
+Private Sub btn_catalogo_mega_Click()
+    btn_catalogo_Click
+End Sub
 
 Private Sub btn_favoritos_Click()
     CargarLibros "L.Recomendado = 1"
@@ -259,6 +314,43 @@ Private Sub btnEditar_Click()
     frmLibro.Show vbModal
 End Sub
 
+Private Sub btnEliminar_Click()
+    Dim item As ListItem
+    Set item = list_libros.SelectedItem
+    
+    If item Is Nothing Then
+        MsgBox "Selecciona el libro a eliminar", vbExclamation
+        Exit Sub
+    End If
+    
+    Dim titulo As String
+    titulo = item.Text
+    Dim resp As Integer
+    resp = MsgBox("¿Estás seguro de eiminar el libro '" & titulo & "'?", vbYesNo + vbQuestion, "Confirmar eliminación")
+    
+    If resp = vbYes Then
+        Dim libroID As Long
+        libroID = item.Tag
+        On Error GoTo ErrorDelete
+        conn.Execute "DELETE FROM Libros WHERE LibroID=" & CStr(libroID)
+        MsgBox "Libro eliminado.", vbInformation
+        CargarLibros ""
+    End If
+    Exit Sub
+    
+ErrorDelete:
+    MsgBox "Error eliminando libro: " & Err.Description, vbCritical
+    
+End Sub
+
+Private Sub btnNuevoLibro_Click()
+    btn_agregar_Click
+End Sub
+
+Private Sub btnSalir_Click()
+    End
+End Sub
+
 Private Sub Form_Load()
     Set conn = New ADODB.Connection
     conn.CursorLocation = adUseClient
@@ -281,4 +373,7 @@ Private Sub Form_Load()
         .ColumnHeaders.Add , , "Prestado a", 1500
     End With
     
+    CargarLibros ""
+    
 End Sub
+

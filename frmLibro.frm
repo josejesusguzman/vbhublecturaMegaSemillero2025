@@ -276,6 +276,7 @@ Attribute VB_Exposed = False
 Option Explicit
 Public EditandoID As Integer
 
+
 Private Sub chkLeido_Click()
     If chkLeido.Value = 1 Then
         chkPorLeer.Value = 0
@@ -382,6 +383,7 @@ Private Sub cmdGuardar_Click()
         
         conn.Execute sqlInsert
         MsgBox "Libro agregado exitosamente", vbInformation
+        Exit Sub
     
 ErrSave:
     MsgBox "Ocuirió un error al guardar: " & Err.Description, vbCritical
@@ -415,4 +417,14 @@ Private Sub Form_Load()
     
     End If
     
+End Sub
+
+Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
+    If UnloadMode = vbFormControlMenu Then
+        Dim resp As Integer
+        resp = MsgBox("¿Seguro de que deseas salir sin guardar cambios?", vbQuestion + vbYesNo + vbDefaultButton2, "Confirmar salida")
+        If resp = vbNo Then
+            Cancel = True
+        End If
+    End If
 End Sub
